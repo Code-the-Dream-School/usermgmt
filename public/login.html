@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+</head>
+<body>
+    <h1>User Management Logon</h1>
+    <form>
+        <label for="email">email</label>
+        <input id="email">
+        <label for="password">password</label>
+        <input id="password" type="password">
+        <button id="logon">Logon</button>
+    </form>
+    <p>If you have forgotten your password, enter your email and click the request password reset
+        button below.  An email will be sent to you with a link that will allow you to reset your password.
+    </p>
+    <form>
+        <label for="email1">email</label>
+        <input id="email1">
+        <button id="pwreset">Request Password Reset</button>
+    </form>
+    <div id="messages"></div>
+    <script src="./login.js"></script>
+</body>
+</html>
