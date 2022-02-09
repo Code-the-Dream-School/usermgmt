@@ -29,9 +29,16 @@ const UserSchema = new mongoose.Schema({
 })
 
 UserSchema.pre('save', async function () {
+  console.log("got here User 32")
+  console.log(this.password)
   const salt = await bcrypt.genSalt(10)
   this.password = await bcrypt.hash(this.password, salt)
   this.email = this.email.toLowerCase()
+})
+
+UserSchema.pre('findOneAndUpdate', async function () {
+  console.log("got here User 40")
+  console.log(this.password)
 })
 
 UserSchema.methods.createJWT = function () {
@@ -59,8 +66,8 @@ UserSchema.methods.comparePassword = async function (candidatePassword) {
   return isMatch
 }
 
-UserSchema.methods.verifyOneTimeToken = async function (token) {
-  return await jwt.verify(token, this.password + process.env.JWT_SECRET)
+UserSchema.methods.verifyOneTimeToken = function (token) {
+  return jwt.verify(token, this.password + process.env.JWT_SECRET)
 }
 
 module.exports = mongoose.model('User', UserSchema)

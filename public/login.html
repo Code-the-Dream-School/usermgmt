@@ -10,19 +10,29 @@
     <h1>User Management Logon</h1>
     <form>
         <label for="email">email</label>
-        <input id="email">
+        <input id="email" type="email">
         <label for="password">password</label>
         <input id="password" type="password">
-        <button id="logon">Logon</button>
+        <button type="button"  id="logon">Logon</button>
     </form>
     <p>If you have forgotten your password, enter your email and click the request password reset
         button below.  An email will be sent to you with a link that will allow you to reset your password.
+        (It may end up in the spam folder.)
     </p>
     <form>
         <label for="email1">email</label>
-        <input id="email1">
-        <button id="pwreset">Request Password Reset</button>
+        <input id="email1" type="email">
+        <button type="button"  id="pwreset">Request Password Reset</button>
     </form>
+    <p>If you have not verified your email, enter it below.  An email with a link to enable you to 
+        verify your email address will be sent to that address.  (It may end up in the spam folder.)
+    </p>
+    <form>
+        <label for="email2">email</label>
+        <input id="email2" type="email">
+        <button type="button"  id="sendVerify">Request Password Verification Email</button>
+    </form>
+    <a href="/index.html">Home</a>
     <div id="messages"></div>
     <script src="./login.js"></script>
 </body>
