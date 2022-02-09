@@ -15,7 +15,7 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Please provide password'],
-    minlength: 8,
+    minlength: [8, 'Passwords must be at least 8 characters long.'],
     match: [
         /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,25}$/,
         'Passwords must contain at least one uppercase letter, at least one lowercase letter, at least one number,\
@@ -39,6 +39,16 @@ UserSchema.pre('save', async function () {
 UserSchema.pre('findOneAndUpdate', async function () {
   console.log("got here User 40")
   console.log(this.password)
+})
+
+UserSchema.pre('updateOne', async function(){
+  console.log("got here user 45")
+  console.log("query ",this.getQuery())
+  console.log("update ",this._update)
+  if (this.update.password) {
+    const salt = await bcrypt.genSalt(10)
+    this.update.password = await bcrypt.hash(this.password, salt)
+  }
 })
 
 UserSchema.methods.createJWT = function () {

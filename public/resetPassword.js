@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const response = await fetch(`/api/v1/users/validateOneTimeToken`,
             {
-                method: 'PUT',
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'authorization': `Bearer ${token}`
@@ -20,8 +20,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             reset.addEventListener('click', async () => {
                 const password = document.getElementById('password')
                 const password1 = document.getElementById('password1')
-                pw = password.value.strip()
-                pw1 = password1.value.strip()
+                pw = password.value.trim()
+                pw1 = password1.value.trim()
                 if (!pw) {
                     messages.innerHTML='<p>Please enter a password.</p>'
                 } else if (pw != pw1) {
@@ -38,10 +38,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     })
                     const data = await response.json()
                     if (response.status === 200) {
-                        resetpw.style.display=none
+                        resetpw.style.display='none'
                         messages.innerHTML=`<p>The password for ${req.data.email} has been changed.  You can now logon.</p>`
                     } else {
-                        messages.innerText=response.json.message
+                        messages.innerText=data.message
                     }
                 }
             })
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             requestEmail = document.getElementById("requestEmail")
             email = document.getElementById("email")
             requestEmail.addEventListener('click', async () => {
-                if (email.value.strip()) {
+                if (email.value.trim()) {
                     const response = await fetch(`/api/v1/users/sendEmailValidatePrompt`,
                         {
                             method: 'POST',
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
-                                email: email.value.strip()
+                                email: email.value.trim()
                             })
                         })
                     const data = await response.json()

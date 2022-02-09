@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         sendVerify.addEventListener('click', async () => {
             response = await fetch('/api/v1/users/sendEmailValidatePrompt',
                 {
-                    method: 'PUT',
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -46,12 +46,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     })
                 })
             data = await response.json()
-            messages.innnerText = data.message
+            messages.innerText = data.message
         })
         pwreset.addEventListener('click', async () => {
             response = await fetch('/api/v1/users/requestPasswordResetPrompt',
                 {
-                    method: 'PUT',
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     })
                 })
             data = await response.json()
-            messages.innnerText = data.message
+            messages.innerText = data.message
         })
     } catch (error) {
         console.log(error)

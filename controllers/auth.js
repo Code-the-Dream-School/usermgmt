@@ -3,7 +3,7 @@ const User = require('../models/User')
 const { StatusCodes } = require('http-status-codes')
 const { BadRequestError, UnauthenticatedError, NotFoundError } = require('../errors')
 const { sendVerifyEmail, sendPasswordResetEmail } = require('../email/sender')
-function sendVerifyPrompt(user) {
+function sendVerifyPrompt(user,req) {
   const token = user.createOneTimeToken()
   const tokenURL = `${req.protocol}://${req.get('host')}/emailValidate/${token}`
   sendVerifyEmail(req.body.email.toLowerCase(), tokenURL)
@@ -15,15 +15,18 @@ const register = async (req, res) => {
   let user = await User.findOne({ email: req.body.email.toLowerCase() })
   if (user) {
     if (!user.valid) {
-      user = await user.save({ password: req.body.password })
+      console.log("at auth 18 ", req.body.password)
+      user.password=req.body.password
+      user = await user.save()
     } else {
       throw new BadRequestError('That email is already registered.')
     }
   } else {
     user = await User.create({ ...req.body })
   }
-  sendVerifyEmail(user)
-  res.status(StatusCodes.CREATED).json({ user: { email: user.email } })
+  console.log("at auth 26", user)
+  sendVerifyPrompt(user,req)
+  res.status(StatusCodes.CREATED).json({message: `An account for ${req.body.email} was created.` })
 }
 
 const login = async (req, res, next) => {
@@ -39,7 +42,7 @@ const login = async (req, res, next) => {
   }
   if (!user.valid) {
     console.log("user not validated")
-    throw new BadRequestError('The email has not been validated')
+    throw new BadRequestError('The email has not been validated.')
   }
   const isPasswordCorrect = await user.comparePassword(password)
   if (!isPasswordCorrect) {
@@ -65,7 +68,8 @@ const resetPassword = async (req, res, next) => {
     throw new BadRequestError('Please provide a password.')
   }
   //const user1 = await User.findOneAndUpdate({_id: req.user._id}, {password: req.body.password})
-  req.user.save({ password: req.body.password })
+  req.user.password=req.body.password
+  await req.user.save()
   console.log("user is", req.user)
   res.status(StatusCodes.OK).json({ message: `The user password for ${req.user.email} was reset to the new value. `})
 }
@@ -77,13 +81,14 @@ const changePassword = async (req, res, next) => {
   }
   const user = await User.findById(req.userId)
   if (!user) {
-    return res.status(StatusCodes.BadRequestError('Malformed one time token.')) // should never happen
+    throw new BadRequestError('Malformed one time token.') // should never happen
   }
   const pwgood = await user.comparePassword(req.body.oldPassword)
   if (!pwgood) {
-    return res.status(StatusCodes.BadRequestError('Authentication mismatch'))  // should never happen
+    throw new BadRequestError('What was entered for the current password is not correct.')
   }
-  await user.save({ password: req.body.password })
+  user.password = req.body.password
+  await user.save()
   res.status(StatusCodes.OK).json({ message: "The user password was changed." })
 }
 
@@ -119,7 +124,7 @@ const sendEmailValidatePrompt = async (req, res) => {
   if (!user) {
     throw new NotFoundError('That email was not found.')
   }
-  sendVerifyPrompt(user)
+  sendVerifyPrompt(user,req)
   res.status(StatusCodes.OK).json({ message: 'The password verification email was sent.' })
 }
 

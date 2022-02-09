@@ -10,17 +10,17 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     } else {
         changePassword.addEventListener('click', async ()=>{
             try {
-                oldpw = oldPassword.value.strip()
+                oldpw = oldPassword.value.trim()
                 if (!oldpw) {
                     messages.innerText='Please enter your current password.'
                     return
                 } 
-                pw = password.value.strip()
+                pw = password.value.trim()
                 if (!pw) {
                     messages.innerText='Please enter your new password.'
                     return
                 }
-                pw1 = password1.value.strip()
+                pw1 = password1.value.trim()
                 if (pw != pw1) {
                     messages.innerText='The the new passwords entered do not match.'
                     return

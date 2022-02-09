@@ -7,9 +7,10 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     const staleSession = document.getElementById('staleSession')
     const expiredSession = document.getElementById('expiredSession')
     const messages = document.getElementById('messages')
+    const timeLeft = document.getElementById('timeLeft')
     const token = sessionStorage.getItem('token')
     const tokenExpiration = sessionStorage.getItem('tokenExpiration')
-    const currentSecs = Date.now() / 1000
+    const currentSecs = Math.floor(Date.now() / 1000)
     let expired = false
     if (tokenExpiration && (currentSecs>tokenExpiration)) {
         expired=true
@@ -34,6 +35,12 @@ document.addEventListener('DOMContentLoaded', async ()=>{
         }
     }
     if (loggedOn) {
+        const timeToExpire = tokenExpiration - currentSecs
+        const hours = Math.floor(timeToExpire/3600)
+        let remainder = timeToExpire % 3600
+        const minutes = Math.floor(remainder / 60)
+        const seconds = timeToExpire % 60
+        timeLeft.innerText = `Your session will remain valid for ${hours} hours, ${minutes} minutes, and ${seconds} seconds.`
         test.addEventListener('click', async ()=>{
             try {
                 response = await fetch('/api/v1/users/test', {

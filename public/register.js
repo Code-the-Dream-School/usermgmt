@@ -6,14 +6,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const messages = document.getElementById('messages')
     register.addEventListener('click', async () => {
         try {
-            pw = password.value.strip()
-            pw1 = password1.value.strip()
+            pw = password.value.trim()
+            pw1 = password1.value.trim()
             if (!pw) {
                 messages.innerText = "Please enter a password."
             } else if (pw != pw1) {
                 messages.innerText = "The passwords entered don't match."
             } else {
-                response = await fetch('/api/v1/users/login',
+                response = await fetch('/api/v1/users/register',
                     {
                         method: 'POST',
                         headers: {
