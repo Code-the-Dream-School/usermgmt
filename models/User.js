@@ -29,26 +29,10 @@ const UserSchema = new mongoose.Schema({
 })
 
 UserSchema.pre('save', async function () {
-  console.log("got here User 32")
-  console.log(this.password)
+
   const salt = await bcrypt.genSalt(10)
   this.password = await bcrypt.hash(this.password, salt)
   this.email = this.email.toLowerCase()
-})
-
-UserSchema.pre('findOneAndUpdate', async function () {
-  console.log("got here User 40")
-  console.log(this.password)
-})
-
-UserSchema.pre('updateOne', async function(){
-  console.log("got here user 45")
-  console.log("query ",this.getQuery())
-  console.log("update ",this._update)
-  if (this.update.password) {
-    const salt = await bcrypt.genSalt(10)
-    this.update.password = await bcrypt.hash(this.password, salt)
-  }
 })
 
 UserSchema.methods.createJWT = function () {

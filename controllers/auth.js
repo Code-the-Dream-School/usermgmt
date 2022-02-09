@@ -15,7 +15,6 @@ const register = async (req, res) => {
   let user = await User.findOne({ email: req.body.email.toLowerCase() })
   if (user) {
     if (!user.valid) {
-      console.log("at auth 18 ", req.body.password)
       user.password=req.body.password
       user = await user.save()
     } else {
@@ -24,7 +23,6 @@ const register = async (req, res) => {
   } else {
     user = await User.create({ ...req.body })
   }
-  console.log("at auth 26", user)
   sendVerifyPrompt(user,req)
   res.status(StatusCodes.CREATED).json({message: `An account for ${req.body.email} was created.` })
 }
@@ -37,11 +35,9 @@ const login = async (req, res, next) => {
   }
   const user = await User.findOne({ email })
   if (!user) {
-    console.log("couldn't find user")
     throw new UnauthenticatedError('Invalid Credentials')
   }
   if (!user.valid) {
-    console.log("user not validated")
     throw new BadRequestError('The email has not been validated.')
   }
   const isPasswordCorrect = await user.comparePassword(password)
@@ -52,12 +48,10 @@ const login = async (req, res, next) => {
   const token = user.createJWT()
   const payload = jwt.decode(token)
   const expires = payload.exp
-  console.log("token expires", expires)
   res.status(StatusCodes.OK).json({ token, expires })
 }
 
 const validateEmail = async (req, res, next) => {
-  console.log(req.user)
   await req.user.updateOne({ valid: true })
   res.status(StatusCodes.OK).json({ message: "The user email was validated." , email: req.user.email })
 }
@@ -70,7 +64,6 @@ const resetPassword = async (req, res, next) => {
   //const user1 = await User.findOneAndUpdate({_id: req.user._id}, {password: req.body.password})
   req.user.password=req.body.password
   await req.user.save()
-  console.log("user is", req.user)
   res.status(StatusCodes.OK).json({ message: `The user password for ${req.user.email} was reset to the new value. `})
 }
 
@@ -108,10 +101,10 @@ const getOneTimeToken = async (req, res) => { // just for testing
   if (!user) {
     throw new UnauthenticatedError('Request not authenticated.')
   }
-  // isCorrectPassword = await user.comparePassword(req.body.password)
-  // if (!isCorrectPassword) {
-  //   throw new UnauthenticatedError('Request not authenticated')
-  // }
+  isCorrectPassword = await user.comparePassword(req.body.password)
+  if (!isCorrectPassword) {
+    throw new UnauthenticatedError('Request not authenticated')
+  }
   const token = user.createOneTimeToken()
   res.status(StatusCodes.OK).json({ token })
 }

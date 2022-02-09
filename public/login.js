@@ -23,8 +23,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     })
                 })
             data = await response.json()
-            console.log(data)
-            console.log("fetch response: ", response.status)
             if (response.status === 200) {
                 sessionStorage.setItem('token', data.token)
                 sessionStorage.setItem('tokenExpiration', data.expires)

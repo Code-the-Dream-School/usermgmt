@@ -3,7 +3,6 @@ const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 const sendVerifyEmail = (email,tokenURL) => {
-    console.log(`sending verify email to ${email}`)
     sgMail.send({
         to: email,
         from: process.env.FROM_ADDRESS,
@@ -16,7 +15,6 @@ const sendVerifyEmail = (email,tokenURL) => {
 }
 
 const sendPasswordResetEmail = (email, tokenURL) => {
-    console.log("at 1: ", email, tokenURL)
     sgMail.send({
         to: email,
         from: process.env.FROM_ADDRESS,
