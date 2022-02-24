@@ -15,7 +15,7 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Please provide password'],
-    minlength: 8,
+    minlength: [8, 'Passwords must be at least 8 characters long.'],
     match: [
         /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,25}$/,
         'Passwords must contain at least one uppercase letter, at least one lowercase letter, at least one number,\
@@ -29,6 +29,7 @@ const UserSchema = new mongoose.Schema({
 })
 
 UserSchema.pre('save', async function () {
+
   const salt = await bcrypt.genSalt(10)
   this.password = await bcrypt.hash(this.password, salt)
   this.email = this.email.toLowerCase()
@@ -59,8 +60,8 @@ UserSchema.methods.comparePassword = async function (candidatePassword) {
   return isMatch
 }
 
-UserSchema.methods.verifyOneTimeToken = async function (token) {
-  return await jwt.verify(token, this.password + process.env.JWT_SECRET)
+UserSchema.methods.verifyOneTimeToken = function (token) {
+  return jwt.verify(token, this.password + process.env.JWT_SECRET)
 }
 
 module.exports = mongoose.model('User', UserSchema)

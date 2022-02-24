@@ -11,11 +11,7 @@ const userRouter = require('./routes/auth')
 const connectDB = require('./db/connect');
 app.use(cors());
 app.use(express.json());
-// app.all('*', async function(req, res, next){
-//     console.log(req.url)
-//     console.log(req.method)
-//     next()
-// }) 
+ 
 app.get('/emailValidate/:token', function (req, res) {
     res.sendFile(__dirname + '/public/emailValidate.html')
 });
@@ -29,6 +25,7 @@ app.use(notFoundMiddleware);
 
 app.use(errorHandlerMiddleware);
 const port = process.env.PORT || 3000;
+app.set('port', port)
 
 const start = async () => {
     try {

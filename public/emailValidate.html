@@ -1,14 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management</title>
 </head>
+
 <body>
-    <h1>Validating Email</h1>
-    <div id="token"></div>
+    <h1>User Management Email Validation</h1>
+    <div id="messages">Verifying the link, one moment ...</div>
+    <form id="requestVerify" style="display:none">
+        <label for="email">Email</label>
+        <input id="email" type="email">
+        <button type="button" id="requestEmail">Request Email to Verify Account</button>
+    </form>
+    <div>
+        <a href="/index.html">Home</a>
+    </div>
+    <div>
+        <a href="/login.html">Logon</a>
+    </div>
     <script src="/validateEmail.js"></script>
 </body>
+
 </html>

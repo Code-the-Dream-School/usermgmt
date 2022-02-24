@@ -7,7 +7,38 @@
     <title>User Management</title>
 </head>
 <body>
-    <h1>User Management</h1>
-    
+    <h1>User Management Home Page</h1>
+    <div id="isLoggedIn" style="display:none">
+        <p>You are logged on.  You can test that your session is still valid, or change your password,
+            or log off.  You can also logon again so that your session won't expire soon.
+        </p>
+        <p id="timeLeft"></p>
+        <p id="staleSession"></p>
+        <div>
+            <button type="button"  id="test">Test</button>
+        </div>
+        <div id="messages"></div>
+        <div>
+            <a href="/changePassword.html">Change Password</a>
+        </div>
+        <div>
+            <a href="/login.html">Logon</a>
+        </div>
+        <div>
+            <button type="button"  id="logoff">Log Off</button>
+        </div>
+    </div>
+    <div id="notLoggedIn" style="display:none">
+        <p>You are not logged on.</p>
+        <p id="expiredSession"></p>
+        <p>You can logon or register.</p>
+        <div>
+            <a href="/login.html">Logon</a>
+        </div>
+        <div>
+            <a href="/register.html">Register</a>
+        </div>
+    </div>
+    <script src="/index.js"></script>
 </body>
 </html>

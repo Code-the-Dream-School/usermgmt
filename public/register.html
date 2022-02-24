@@ -7,16 +7,27 @@
     <title>User Management</title>
 </head>
 <body>
-    <h1>User Management Logon</h1>
+    <h1>User Management Registration</h1>
+    <p>Fill out the form below to register.  Passwords must be at least 8 characters long, and must have at least
+        one upper case letter, one lower case letter, one number, and one special character.  When you register,
+        an email will be sent to you with a link that is used to validate your email address.  You must validate
+        your email address before you can logon.  (The email may arrive in your spam folder.)
+    </p>
     <form>
         <label for="email">email</label>
-        <input id="email">
+        <input id="email" type="email">
         <label for="password">password</label>
         <input id="password" type="password">
         <label for="password1">re-enter password</label>
         <input id="password1" type="password">
-        <button id="register">Register</button>
+        <button type="button"  id="register">Register</button>
     </form>
+    <div>
+        <a href="/index.html">Home</a>
+    </div>
+    <div>
+        <a href="/login.html">Logon</a>
+    </div>
     <div id="messages"></div>
     <script src="./register.js"></script>
 </body>

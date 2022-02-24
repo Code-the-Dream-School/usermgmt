@@ -1,7 +1,13 @@
+const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 const { StatusCodes } = require('http-status-codes')
-const { BadRequestError, UnauthenticatedError } = require('../errors')
-
+const { BadRequestError, UnauthenticatedError, NotFoundError } = require('../errors')
+const { sendVerifyEmail, sendPasswordResetEmail } = require('../email/sender')
+function sendVerifyPrompt(user,req) {
+  const token = user.createOneTimeToken()
+  const tokenURL = `${req.protocol}://${req.get('host')}/emailValidate/${token}`
+  sendVerifyEmail(req.body.email.toLowerCase(), tokenURL)
+}
 const register = async (req, res) => {
   if (!req.body.email || !req.body.password) {
     throw new BadRequestError('Please provide an email and a password.')
@@ -9,15 +15,16 @@ const register = async (req, res) => {
   let user = await User.findOne({ email: req.body.email.toLowerCase() })
   if (user) {
     if (!user.valid) {
-      user.password = req.body.password
+      user.password=req.body.password
       user = await user.save()
     } else {
       throw new BadRequestError('That email is already registered.')
     }
   } else {
-      user = await User.create({ ...req.body })
+    user = await User.create({ ...req.body })
   }
-  res.status(StatusCodes.CREATED).json({ user: { email: user.email } })
+  sendVerifyPrompt(user,req)
+  res.status(StatusCodes.CREATED).json({message: `An account for ${req.body.email} was created.` })
 }
 
 const login = async (req, res, next) => {
@@ -31,7 +38,7 @@ const login = async (req, res, next) => {
     throw new UnauthenticatedError('Invalid Credentials')
   }
   if (!user.valid) {
-    throw new UnauthenticatedError('Invalid Credentials')
+    throw new BadRequestError('The email has not been validated.')
   }
   const isPasswordCorrect = await user.comparePassword(password)
   if (!isPasswordCorrect) {
@@ -39,13 +46,14 @@ const login = async (req, res, next) => {
   }
   // compare password
   const token = user.createJWT()
-  res.status(StatusCodes.OK).json({ token })
+  const payload = jwt.decode(token)
+  const expires = payload.exp
+  res.status(StatusCodes.OK).json({ token, expires })
 }
 
 const validateEmail = async (req, res, next) => {
-  req.user.valid = true
-  await req.user.update()
-  res.status(StatusCodes.OK).json({ message: "The user email was validated." })
+  await req.user.updateOne({ valid: true })
+  res.status(StatusCodes.OK).json({ message: "The user email was validated." , email: req.user.email })
 }
 
 
@@ -53,9 +61,10 @@ const resetPassword = async (req, res, next) => {
   if (!req.body.password) {
     throw new BadRequestError('Please provide a password.')
   }
-  req.user.password = req.body.password
-  await req.user.updateOne()
-  res.status(StatusCodes.OK).json({ message: "The user password was reset to the new value." })
+  //const user1 = await User.findOneAndUpdate({_id: req.user._id}, {password: req.body.password})
+  req.user.password=req.body.password
+  await req.user.save()
+  res.status(StatusCodes.OK).json({ message: `The user password for ${req.user.email} was reset to the new value. `})
 }
 
 
@@ -65,14 +74,14 @@ const changePassword = async (req, res, next) => {
   }
   const user = await User.findById(req.userId)
   if (!user) {
-    return res.status(StatusCodes.BadRequestError('Malformed one time token.')) // should never happen
+    throw new BadRequestError('Malformed one time token.') // should never happen
   }
-  pwgood = await user.comparePassword(req.body.oldPassword)
+  const pwgood = await user.comparePassword(req.body.oldPassword)
   if (!pwgood) {
-    return res.status(StatusCodes.BadRequestError('Authentication mismatch'))  // should never happen
+    throw new BadRequestError('What was entered for the current password is not correct.')
   }
   user.password = req.body.password
-  await user.updateOne()
+  await user.save()
   res.status(StatusCodes.OK).json({ message: "The user password was changed." })
 }
 
@@ -81,10 +90,10 @@ const test = async (req, res) => {
 }
 
 const validateOneTimeToken = async (req, res) => {
-  res.status(StatusCodes.OK).json({ message: "The one-time credential was validated." })
+  res.status(StatusCodes.OK).json({ message: "The one-time credential was validated.", email: req.user.email })
 }
 
-const getOneTimeToken = async (req, res) => {
+const getOneTimeToken = async (req, res) => { // just for testing
   if (!req.body.email || !req.body.password) {
     throw new BadRequestError('Please provide an email and a password.')
   }
@@ -96,8 +105,34 @@ const getOneTimeToken = async (req, res) => {
   if (!isCorrectPassword) {
     throw new UnauthenticatedError('Request not authenticated')
   }
-  token = user.createOneTimeToken()
+  const token = user.createOneTimeToken()
   res.status(StatusCodes.OK).json({ token })
+}
+
+const sendEmailValidatePrompt = async (req, res) => {
+  if (!req.body.email) {
+    throw new BadRequestError('Please provide an email.')
+  }
+  const user = await User.findOne({ email: req.body.email.toLowerCase() })
+  if (!user) {
+    throw new NotFoundError('That email was not found.')
+  }
+  sendVerifyPrompt(user,req)
+  res.status(StatusCodes.OK).json({ message: 'The password verification email was sent.' })
+}
+
+const sendPasswordResetPrompt = async (req, res) => {
+  if (!req.body.email) {
+    throw new BadRequestError('Please provide an email.')
+  }
+  const user = await User.findOne({ email: req.body.email.toLowerCase() })
+  if (!user) {
+    throw new NotFoundError('No user with that email was found.')
+  }
+  const token = user.createOneTimeToken()
+  const tokenURL = `${req.protocol}://${req.get('host')}/resetPassword/${token}`
+  sendPasswordResetEmail(req.body.email, tokenURL)
+  res.status(StatusCodes.OK).json({ message: 'The password reset email was sent.' })
 }
 
 module.exports = {
@@ -108,5 +143,7 @@ module.exports = {
   changePassword,
   test,
   validateOneTimeToken,
-  getOneTimeToken
+  getOneTimeToken,
+  sendPasswordResetPrompt,
+  sendEmailValidatePrompt
 }
