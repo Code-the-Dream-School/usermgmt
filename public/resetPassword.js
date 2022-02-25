@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const data = await response.json()
                     if (response.status === 200) {
                         resetpw.style.display='none'
-                        messages.innerHTML=`<p>The password for ${req.data.email} has been changed.  You can now logon.</p>`
+                        messages.innerHTML=`<p>${data.message}  You can now logon.</p>`
                     } else {
                         messages.innerText=data.message
                     }
