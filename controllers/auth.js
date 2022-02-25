@@ -3,11 +3,21 @@ const User = require('../models/User')
 const { StatusCodes } = require('http-status-codes')
 const { BadRequestError, UnauthenticatedError, NotFoundError } = require('../errors')
 const { sendVerifyEmail, sendPasswordResetEmail } = require('../email/sender')
-function sendVerifyPrompt(user,req) {
-  const token = user.createOneTimeToken()
-  const tokenURL = `${req.protocol}://${req.get('host')}/emailValidate/${token}`
+function sendVerifyPrompt(tokenURL, req) {
   sendVerifyEmail(req.body.email.toLowerCase(), tokenURL)
 }
+function createTokenURLVerify(user, req) {
+  const token = user.createOneTimeToken()
+  const tokenURL = `${req.protocol}://${req.get('host')}/emailValidate/${token}`
+  return tokenURL
+}
+
+function createTokenURLReset(user, req) {
+  const token = user.createOneTimeToken()
+  const tokenURL = `${req.protocol}://${req.get('host')}/resetPassword/${token}`
+  return tokenURL
+}
+
 const register = async (req, res) => {
   if (!req.body.email || !req.body.password) {
     throw new BadRequestError('Please provide an email and a password.')
@@ -15,7 +25,7 @@ const register = async (req, res) => {
   let user = await User.findOne({ email: req.body.email.toLowerCase() })
   if (user) {
     if (!user.valid) {
-      user.password=req.body.password
+      user.password = req.body.password
       user = await user.save()
     } else {
       throw new BadRequestError('That email is already registered.')
@@ -23,8 +33,12 @@ const register = async (req, res) => {
   } else {
     user = await User.create({ ...req.body })
   }
-  sendVerifyPrompt(user,req)
-  res.status(StatusCodes.CREATED).json({message: `An account for ${req.body.email} was created.` })
+  const tokenURL = createTokenURLVerify(user,req)
+  sendVerifyPrompt(tokenURL, req)
+  res.status(StatusCodes.CREATED).json(
+    {
+      message: `An account for ${req.body.email} was created.`
+    })
 }
 
 const login = async (req, res, next) => {
@@ -53,7 +67,7 @@ const login = async (req, res, next) => {
 
 const validateEmail = async (req, res, next) => {
   await req.user.updateOne({ valid: true })
-  res.status(StatusCodes.OK).json({ message: "The user email was validated." , email: req.user.email })
+  res.status(StatusCodes.OK).json({ message: "The user email was validated.", email: req.user.email })
 }
 
 
@@ -62,9 +76,9 @@ const resetPassword = async (req, res, next) => {
     throw new BadRequestError('Please provide a password.')
   }
   //const user1 = await User.findOneAndUpdate({_id: req.user._id}, {password: req.body.password})
-  req.user.password=req.body.password
+  req.user.password = req.body.password
   await req.user.save()
-  res.status(StatusCodes.OK).json({ message: `The user password for ${req.user.email} was reset to the new value. `})
+  res.status(StatusCodes.OK).json({ message: `The user password for ${req.user.email} was reset to the new value. ` })
 }
 
 
@@ -94,6 +108,9 @@ const validateOneTimeToken = async (req, res) => {
 }
 
 const getOneTimeToken = async (req, res) => { // just for testing
+  if (process.env.NODE_ENV === 'production') {
+    throw new BadRequestError('This operation is not supported.')
+  }
   if (!req.body.email || !req.body.password) {
     throw new BadRequestError('Please provide an email and a password.')
   }
@@ -101,7 +118,7 @@ const getOneTimeToken = async (req, res) => { // just for testing
   if (!user) {
     throw new UnauthenticatedError('Request not authenticated.')
   }
-  isCorrectPassword = await user.comparePassword(req.body.password)
+  const isCorrectPassword = await user.comparePassword(req.body.password)
   if (!isCorrectPassword) {
     throw new UnauthenticatedError('Request not authenticated')
   }
@@ -117,8 +134,11 @@ const sendEmailValidatePrompt = async (req, res) => {
   if (!user) {
     throw new NotFoundError('That email was not found.')
   }
-  sendVerifyPrompt(user,req)
-  res.status(StatusCodes.OK).json({ message: 'The password verification email was sent.' })
+  const tokenURL = createTokenURLVerify(user,req)
+  sendVerifyPrompt(tokenURL, req)
+  res.status(StatusCodes.OK).json({
+    message: 'The email address verification email was sent.'
+  })
 }
 
 const sendPasswordResetPrompt = async (req, res) => {
@@ -129,11 +149,56 @@ const sendPasswordResetPrompt = async (req, res) => {
   if (!user) {
     throw new NotFoundError('No user with that email was found.')
   }
-  const token = user.createOneTimeToken()
-  const tokenURL = `${req.protocol}://${req.get('host')}/resetPassword/${token}`
+  const tokenURL = createTokenURLReset(user, req)
   sendPasswordResetEmail(req.body.email, tokenURL)
-  res.status(StatusCodes.OK).json({ message: 'The password reset email was sent.' })
+  res.status(StatusCodes.OK).json({
+    message: 'The password reset email was sent.'
+  })
 }
+const sendEmailValidateLink = async (req, res) => { // just for testing
+  // should always return a BadRequestError in production
+  if (process.env.NODE_ENV === 'production') {
+    throw new BadRequestError('This operation is not supported.')
+  }
+  if (!req.body.email || !req.body.password) {
+    throw new BadRequestError('Please provide an email and a password.')
+  }
+  const user = await User.findOne({ email: req.body.email.toLowerCase() })
+  if (!user) {
+    throw new NotFoundError('That email was not found.')
+  }
+  const isCorrectPassword = await user.comparePassword(req.body.password)
+  if (!isCorrectPassword) {
+    throw new UnauthenticatedError('Request not authenticated')
+  }
+  const tokenURL = createTokenURLVerify(user,req)
+  res.status(StatusCodes.OK).json({
+    verificationLink: tokenURL
+  })
+}
+
+const sendPasswordResetLink= async (req, res) => { // just for testing
+  // should always return a BadRequestError in production
+  if (process.env.NODE_ENV === 'production') {
+    throw new BadRequestError('This operation is not supported.')
+  }
+  if (!req.body.email || !req.body.password) {
+    throw new BadRequestError('Please provide an email and a password.')
+  }
+  const user = await User.findOne({ email: req.body.email.toLowerCase() })
+  if (!user) {
+    throw new NotFoundError('No user with that email was found.')
+  }
+  const isCorrectPassword = await user.comparePassword(req.body.password)
+  if (!isCorrectPassword) {
+    throw new UnauthenticatedError('Request not authenticated')
+  }
+  const tokenURL = createTokenURLReset(user, req)
+  res.status(StatusCodes.OK).json({
+    resetLink: tokenURL
+  })
+}
+
 
 module.exports = {
   register,
@@ -145,5 +210,7 @@ module.exports = {
   validateOneTimeToken,
   getOneTimeToken,
   sendPasswordResetPrompt,
-  sendEmailValidatePrompt
+  sendEmailValidatePrompt,
+  sendEmailValidateLink,
+  sendPasswordResetLink
 }
