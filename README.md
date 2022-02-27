@@ -114,7 +114,7 @@ look for them there.
 Do all your work in a git branch as usual, so that you can do
 a pull request at the end to submit your homework.
 
-You need to change controller.js to make this work.  All the methods
+You need to change controller/auth.js to make this work.  All the methods
 are already implemented for you except login, sendPasswordResetPrompt,
 and resetPassword.  
  
@@ -142,6 +142,15 @@ as http, not https.  You can get an idea of how to do it by
 looking at the sendEmailValidatePrompt method, and also the
 sendPasswordResetLink method.  You use the createTokenURLReset
 method and also the sendPasswordResetEmail method.
+
+For resetPassword, you need to validate the inputs and change
+the password if the inputs are valid, with appropriate error
+messages if they are not.  The password must have at least 8
+characters, with at least one upper case letter, at least one
+lower case letter, and at least one special character.  The user
+model has a regular expression to check this.  Use user.save(),
+not user.updateOne(), because if you use updateOne, the password
+will not be saved in hashed form.
 
 The other file you have to change is email/sender.js.  You need
 to complete the sendPasswordResetEmail method.  It will be
