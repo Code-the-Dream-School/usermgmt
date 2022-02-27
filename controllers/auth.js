@@ -33,7 +33,7 @@ const register = async (req, res) => {
   } else {
     user = await User.create({ ...req.body })
   }
-  const tokenURL = createTokenURLVerify(user,req)
+  const tokenURL = createTokenURLVerify(user, req)
   sendVerifyPrompt(tokenURL, req)
   res.status(StatusCodes.CREATED).json(
     {
@@ -42,27 +42,8 @@ const register = async (req, res) => {
 }
 
 const login = async (req, res, next) => {
-  const { email, password } = req.body
-
-  if (!email || !password) {
-    throw new BadRequestError('Please provide email and password')
-  }
-  const user = await User.findOne({ email })
-  if (!user) {
-    throw new UnauthenticatedError('Invalid Credentials')
-  }
-  if (!user.valid) {
-    throw new BadRequestError('The email has not been validated.')
-  }
-  const isPasswordCorrect = await user.comparePassword(password)
-  if (!isPasswordCorrect) {
-    throw new UnauthenticatedError('Invalid Credentials')
-  }
-  // compare password
-  const token = user.createJWT()
-  const payload = jwt.decode(token)
-  const expires = payload.exp
-  res.status(StatusCodes.OK).json({ token, expires })
+  // replace the following line with your code here
+  throw new BadRequestError('This method is not yet implemented.')
 }
 
 const validateEmail = async (req, res, next) => {
@@ -72,13 +53,8 @@ const validateEmail = async (req, res, next) => {
 
 
 const resetPassword = async (req, res, next) => {
-  if (!req.body.password) {
-    throw new BadRequestError('Please provide a password.')
-  }
-  //const user1 = await User.findOneAndUpdate({_id: req.user._id}, {password: req.body.password})
-  req.user.password = req.body.password
-  await req.user.save()
-  res.status(StatusCodes.OK).json({ message: `The user password for ${req.user.email} was reset to the new value. ` })
+   // replace the following line with your code here
+   throw new BadRequestError('This method is not yet implemented.')
 }
 
 
@@ -134,7 +110,7 @@ const sendEmailValidatePrompt = async (req, res) => {
   if (!user) {
     throw new NotFoundError('That email was not found.')
   }
-  const tokenURL = createTokenURLVerify(user,req)
+  const tokenURL = createTokenURLVerify(user, req)
   sendVerifyPrompt(tokenURL, req)
   res.status(StatusCodes.OK).json({
     message: 'The email address verification email was sent.'
@@ -142,19 +118,10 @@ const sendEmailValidatePrompt = async (req, res) => {
 }
 
 const sendPasswordResetPrompt = async (req, res) => {
-  if (!req.body.email) {
-    throw new BadRequestError('Please provide an email.')
-  }
-  const user = await User.findOne({ email: req.body.email.toLowerCase() })
-  if (!user) {
-    throw new NotFoundError('No user with that email was found.')
-  }
-  const tokenURL = createTokenURLReset(user, req)
-  sendPasswordResetEmail(req.body.email, tokenURL)
-  res.status(StatusCodes.OK).json({
-    message: 'The password reset email was sent.'
-  })
+  // replace the following line with your code here
+  throw new BadRequestError('This method is not yet implemented.')
 }
+
 const sendEmailValidateLink = async (req, res) => { // just for testing
   // should always return a BadRequestError in production
   if (process.env.NODE_ENV === 'production') {
@@ -171,13 +138,13 @@ const sendEmailValidateLink = async (req, res) => { // just for testing
   if (!isCorrectPassword) {
     throw new UnauthenticatedError('Request not authenticated')
   }
-  const tokenURL = createTokenURLVerify(user,req)
+  const tokenURL = createTokenURLVerify(user, req)
   res.status(StatusCodes.OK).json({
     verificationLink: tokenURL
   })
 }
 
-const sendPasswordResetLink= async (req, res) => { // just for testing
+const sendPasswordResetLink = async (req, res) => { // just for testing
   // should always return a BadRequestError in production
   if (process.env.NODE_ENV === 'production') {
     throw new BadRequestError('This operation is not supported.')
