@@ -158,7 +158,14 @@ many of these.  Then test using the front end.  This is a crude
 front end, with no styling.  While your server is running, you
 go to localhost:3000 with your browser and you can try it out.
 When you test the email functions, be sure that you receive the
-email, but remember that it might end up in the spam folder
+email, but remember that it might end up in the spam folder.
+
+Read the code in the ./public directory.  This is the html and
+javascript that implements the front end.  Try to understand
+what it does.  It communicates with the back end using REST calls
+using the fetch API.  You have the skills to create
+a similar (but better looking) front end because of what you
+learned in the Intro to Programming class.
 
 Then, when all is working, submit your work as usual. 
  
